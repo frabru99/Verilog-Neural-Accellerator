@@ -39,8 +39,14 @@ module acc_pipe(X1, X2, X3, X4, Y, ready, valid, ready_out, valid_out, clk, arst
 
 	/*Add your code to complete the description*/
 
+	FSM fsm(.clk(clk), .reset(arst), .valid(valid), .ready_out(ready_out), .valid_out(valid_out), .ready(ready), /*aggiungere segnali di enable dei registri*/);
+	Register reg1(.clk(clk), .reset(arst), .data_in(Y1), .data_out(S1));
+	Register reg2(.clk(clk), .reset(arst), .data_in(Y2), .data_out(S2));
+	Register reg3(.clk(clk), .reset(arst), .data_in(Y3), .data_out(Y));
 
-	
+	neuron n1();
+	neuron n2();
+	neuron n3();
 
 	
 endmodule
