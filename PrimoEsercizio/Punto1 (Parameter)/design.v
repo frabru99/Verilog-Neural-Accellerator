@@ -21,27 +21,27 @@ module topModule(A, B, opcode, co, Y);
         begin
         B2=B;
         Y=A+B2+opcode[0];
-          co = Y[nbits+1];
+        co = Y[nbits+1];
         end
         
         3'd1: //se 001, sommo e incremento
         begin
         B2=B;
         Y=A+B2+opcode[0]+1;
-          co = Y[nbits+1];
+        co = Y[nbits+1];
         end
         
         3'd2: //se 010, sommo e decremento
        	begin
-        B2=~B;
-        Y=A+B2+opcode[0]-1;
-          co = Y[nbits+1];
+        B2=B;
+        Y=A-B2+opcode[0]-1;
+        co = Y[nbits+1];
         end
         
         3'd3: //se 011, nego B2 e sommo A-B
         begin
-        B2=~B;
-        Y=A+B2+opcode[0];
+        B2=B;
+        Y=A-B2+opcode[0];
           co = Y[nbits+1];
         end
         

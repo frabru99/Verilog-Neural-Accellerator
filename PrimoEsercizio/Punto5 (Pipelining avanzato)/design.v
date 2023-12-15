@@ -14,32 +14,51 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
   output reg [nbits+1:0] Y; // un bit in più per il carry dell'operazione!
   output reg co;
   
+   
+  reg signed [nbits:0] B2; //reg di appoggio, per valori intermedi
+  
   reg signed [nbits:0] Ar, Br; //reg di appoggio per soluzione con pipelining
   reg [nbits+1:0] Yr;
   reg [2:0] opcode_r;
+  reg co_reg;
   
-  reg signed [nbits:0] B2; //reg di appoggio, per valori intermedi
+   
+  //reg in più per la soluzione con registri intermedi
+  reg signed [nbits:0] Bregister;
+  reg signed [nbits:0] Aregister;
+  reg [2:0] opcode_r2;
   
+  
+  
+   
   
   //per pipe=1, instanzio vari registri per l'utilizzo pipe-lined.
-  myReg #(.nbits(nbits)) A_reg(.clk(clk), .Q(Ar), .D(A), .rst(rst), .arst(arst));
+  myReg #(.nbits(nbits)) A_reg(.clk(clk), .Q(Ar), .D(A), .rst(rst), .arst(arst)); //per gli ingressi
   myReg #(.nbits(nbits)) B_reg(.clk(clk), .Q(Br), .D(B), .rst(rst), .arst(arst));
-  myReg #(.nbits(nbits)) opcode_reg(.clk(clk), .Q(opcode_r), .D(opcode), .rst(rst), .arst(arst));
+  myReg #(.nbits(2)) opcode_reg(.clk(clk), .Q(opcode_r), .D(opcode), .rst(rst), .arst(arst));
+  
+  //per le uscite
   myReg #(.nbits(nbits)) Y_reg(.clk(clk), .Q(Yr), .D(Y), .rst(rst), .arst(arst));
+  myReg #(.nbits(nbits)) carryOut_reg(.clk(clk), .Q(co_reg), .D(co), .rst(rst), .arst(arst));
   
-  //ora definisco un blocco procedurale 
+  //registri in più per l'aggiunta della pipeline nel mezzo del datapath
+  myReg #(.nbits(nbits)) B_regis(.clk(clk), .Q(Bregister), .D(Br), .rst(rst), .arst(arst));
+  myReg #(.nbits(nbits)) A_regis(.clk(clk), .Q(Aregister), .D(Ar), .rst(rst), .arst(arst));
   
+  //aggiungo un ulteriore registro per op_code per permettere di tempificare correttamente 
+  //il circuito
+  myReg #(.nbits(2)) opcode_reg2(.clk(clk), .Q(opcode_r2), .D(opcode_r), .rst(rst), .arst(arst));
   
   
   always @(negedge(clk) or posedge(rst)) //qui capisco cosa bisogna fare a seconda dell'opcode dato in ingresso 
     begin 
-       //fare solo il reset
+		
       if(rst) begin
         Y<=0;
         co=0;
       end
       
-      if(pipe==0)
+      if(pipe==0) begin 
         
         case(opcode)
           3'd0: //se 000, allora sommo solo A e B2
@@ -60,7 +79,7 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           begin
           B2=B;
           Y=A-B2+opcode[0]-1;
-            co = Y[nbits+1];
+           co = Y[nbits+1];
           end
 
           3'd3: //se 011, nego B2 e sommo A-B
@@ -97,10 +116,11 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           co = 0;
           end
         endcase 
-         
-      else
+      end 
+      
+      else if (pipe==1) begin 
         
-        case(opcode)
+        case(opcode_r)
           3'd0: //se 000, allora sommo solo A e B2
           begin
           B2=Br;
@@ -117,7 +137,7 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
 
           3'd2: //se 010, sommo e decremento
           begin
-          B2=-Br;
+          B2=Br;
           Y=Ar-B2+opcode_r[0]-1;
           co = Y[nbits+1];
           end
@@ -154,8 +174,57 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           co = 0;
           end
         endcase
+        
+      end else
+        case (opcode_r2) 
+          3'd0: // 000, sommo A e B 
+			begin
+              Y={Aregister[nbits:1]+ Bregister[nbits:1], Aregister[0] + Bregister[0]}+opcode_r2[0];
+              co = Y[nbits+1];
+            end 
+          3'd1:	 // 001, sommo A, B e aggiungo 1
+			begin
+              Y={Aregister[nbits:1]+ Bregister[nbits:1], Aregister[0] + Bregister[0]}+opcode_r2[0]+1;
+              co = Y[nbits+1];
+            end
+          3'd2: // 010, differenza A e B, sottraggo 1
+			begin
+              Y={Aregister[nbits:1]- Bregister[nbits:1], Aregister[0] - Bregister[0]}+opcode_r2[0]-1;
+              co = Y[nbits+1];
+            end 
+          3'd3: // 011, sottraggo B ad A
+            begin
+              Y={Aregister[nbits:1]-Bregister[nbits:1], Aregister[0] - Bregister[0]+opcode_r2[0]};
+              co = Y[nbits+1];
+            end
+            
+          3'd4: // 100, passa solo A
+            begin 
+              Y=Aregister;
+              co=0;
+            end 
+          3'd5: // 101, passa A+1
+            begin
+              Y=Aregister+1;
+              co=Y[nbits+1];
+            end 
+          3'd6: // 110, passa A-1
+            begin
+              Y=Aregister-1;
+              co=Y[nbits+1];
+            end
+          3'd7: // 111, passa A
+            begin
+              Y=Aregister;
+              co=0;
+            end 
+        endcase
+        
       end 
+  
+  
 endmodule
+
 
 
 module myReg(clk, Q, D, arst, rst);

@@ -7,7 +7,7 @@ module testbench;
   wire [16:0] Y_result;
   wire co_result;
   
-  topModule dut(
+   topModule #(.nbits(7)) dut(
     .A(A_test),
     .B(B_test),
     .opcode(opcode_test),
