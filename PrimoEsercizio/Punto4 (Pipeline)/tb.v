@@ -60,9 +60,9 @@ module testbench;
  always 
    begin 
      clk<= 0;
-     #10;
+     #5;
      clk <= 1;
-     #10;
+     #5;
    end
 
 //ricorda, l'ordine non deve interessare in questi casi!

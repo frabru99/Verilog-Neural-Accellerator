@@ -2,9 +2,9 @@
 // or browse Examples
 
 module testbench;
-  reg [15:0] A_test, B_test;
+  reg [7:0] A_test, B_test;
   reg [2:0] opcode_test;
-  wire [16:0] Y_result;
+  wire [8:0] Y_result;
   wire co_result;
   
   topModule dut(
