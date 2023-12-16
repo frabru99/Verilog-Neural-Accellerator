@@ -14,7 +14,6 @@ module topModule(A, B, opcode, co, Y);
   reg signed [15:0] B2=B;
   
   
-  
   always @(opcode) //qui capisco cosa bisogna fare a seconda dell'opcode dato in ingresso 
     begin 
       case(opcode)

@@ -18,7 +18,8 @@ module testbench;
     .Y(Y_result),
     .co(co_result),
     .clk(clk),
-    .res(reset)
+    .rst(rst),
+    .arst(reset)
   );
   
   initial begin
@@ -48,6 +49,7 @@ module testbench;
           #20;
           
         end 
+    #10;
     $fclose(fd);
     $finish; // Termina la simulazione
   end

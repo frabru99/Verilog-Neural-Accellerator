@@ -1,6 +1,5 @@
 `timescale 1ns/1ps
-`include "acc_pipe.v"
-`include "neuron.v"
+
 
 module tb_accelerator1();
 	reg signed [7:0] X1, X2, X3, X4;
@@ -22,6 +21,8 @@ module tb_accelerator1();
 	
 	always
 	begin
+      	$dumpfile("dump.vcd"); 
+      	$dumpvars;
 		#5;
 		clk <= ~clk;
 	end

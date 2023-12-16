@@ -19,14 +19,33 @@ module testbench;
     $dumpfile("dump.vcd");
     $dumpvars(0, testbench);
     
+    A_test = 10; B_test = 5; opcode_test = 3'b000; // Esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+    
+    A_test = 10; B_test = 11; opcode_test = 3'b001; // Altro esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+    
     // Test con diverse combinazioni di input
-    A_test = 10; B_test = 5; opcode_test = 3'b001; // Esempio di input
+    A_test = 1; B_test = 2; opcode_test = 3'b010; // Esempio di input
     #10; // Attendiamo un po' per vedere i risultati
     
-    A_test = 20; B_test = 30; opcode_test = 3'b110; // Altro esempio di input
+    A_test = 0; B_test = 7; opcode_test = 3'b011; // Altro esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+
+    // Test con diverse combinazioni di input
+    A_test = 5; B_test = 2; opcode_test = 3'b100; // Esempio di input
     #10; // Attendiamo un po' per vedere i risultati
     
-    // Aggiungi ulteriori combinazioni di input per testare più casi
+    A_test = 4; B_test = 3; opcode_test = 3'b101; // Altro esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+
+    // Test con diverse combinazioni di input
+    A_test = 3; B_test = 2; opcode_test = 3'b110; // Esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+    
+    A_test = 1; B_test = 0; opcode_test = 3'b111; // Altro esempio di input
+    #10; // Attendiamo un po' per vedere i risultati
+
     
     $finish; // Termina la simulazione
   end

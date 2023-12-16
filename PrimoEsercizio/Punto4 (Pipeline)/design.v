@@ -14,32 +14,45 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
   output reg [nbits+1:0] Y; // un bit in più per il carry dell'operazione!
   output reg co;
   
+   
+  reg signed [nbits:0] B2; //reg di appoggio, per valori intermedi
+  
   reg signed [nbits:0] Ar, Br; //reg di appoggio per soluzione con pipelining
   reg [nbits+1:0] Yr;
   reg [2:0] opcode_r;
+  reg co_reg;
   
-  reg signed [nbits:0] B2; //reg di appoggio, per valori intermedi
+   
+  //reg in più per la soluzione con registri intermedi
+  reg signed [nbits:0] Bregister;
+  reg signed [nbits:0] Aregister;
+  reg [2:0] opcode_r2;
   
+  
+  
+   
   
   //per pipe=1, instanzio vari registri per l'utilizzo pipe-lined.
-  myReg #(.nbits(nbits)) A_reg(.clk(clk), .Q(Ar), .D(A), .rst(rst), .arst(arst));
+  myReg #(.nbits(nbits)) A_reg(.clk(clk), .Q(Ar), .D(A), .rst(rst), .arst(arst)); //per gli ingressi
   myReg #(.nbits(nbits)) B_reg(.clk(clk), .Q(Br), .D(B), .rst(rst), .arst(arst));
-  myReg #(.nbits(nbits)) opcode_reg(.clk(clk), .Q(opcode_r), .D(opcode), .rst(rst), .arst(arst));
+  myReg #(.nbits(2)) opcode_reg(.clk(clk), .Q(opcode_r), .D(opcode), .rst(rst), .arst(arst));
+  
+  //per le uscite
   myReg #(.nbits(nbits)) Y_reg(.clk(clk), .Q(Yr), .D(Y), .rst(rst), .arst(arst));
+  myReg #(.nbits(nbits)) carryOut_reg(.clk(clk), .Q(co_reg), .D(co), .rst(rst), .arst(arst));
   
-  //ora definisco un blocco procedurale 
-  
+
   
   
   always @(negedge(clk) or posedge(rst)) //qui capisco cosa bisogna fare a seconda dell'opcode dato in ingresso 
     begin 
-       //fare solo il reset
+		
       if(rst) begin
         Y<=0;
         co=0;
       end
       
-      if(pipe==0)
+      if(pipe==0) begin 
         
         case(opcode)
           3'd0: //se 000, allora sommo solo A e B2
@@ -60,7 +73,7 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           begin
           B2=B;
           Y=A-B2+opcode[0]-1;
-            co = Y[nbits+1];
+           co = Y[nbits+1];
           end
 
           3'd3: //se 011, nego B2 e sommo A-B
@@ -97,10 +110,11 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           co = 0;
           end
         endcase 
-         
-      else
+      end 
+      
+      else if (pipe==1) begin 
         
-        case(opcode)
+        case(opcode_r)
           3'd0: //se 000, allora sommo solo A e B2
           begin
           B2=Br;
@@ -117,7 +131,7 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
 
           3'd2: //se 010, sommo e decremento
           begin
-          B2=-Br;
+          B2=Br;
           Y=Ar-B2+opcode_r[0]-1;
           co = Y[nbits+1];
           end
@@ -154,8 +168,13 @@ module topModule(A, B, opcode, co, Y, clk, rst, arst);
           co = 0;
           end
         endcase
+        
       end 
+      end 
+  
+  
 endmodule
+
 
 
 module myReg(clk, Q, D, arst, rst);
